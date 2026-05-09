@@ -1,4 +1,4 @@
-name: Build Lanmitm (Legacy Android)
+name: Build Lanmitm (android-14)
 
 on:
   workflow_dispatch:
@@ -20,24 +20,24 @@ jobs:
           distribution: temurin
           java-version: 8
 
-      - name: Download legacy Android SDK (r20)
+      - name: Download legacy Android SDK r20
         run: |
           wget https://dl.google.com/android/android-sdk_r20-linux.tgz -O sdk.tgz
           tar -xzf sdk.tgz
           mv android-sdk-linux $HOME/android-sdk
 
-      - name: Install platform android-19
+      - name: Install android-14 platform
         run: |
           export ANDROID_HOME=$HOME/android-sdk
           export PATH=$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$PATH
-          echo "y" | android update sdk --no-ui --filter platform-tools,android-19
+          echo "y" | android update sdk --no-ui --filter platform-tools,android-14
 
       - name: Generate build.xml
         working-directory: Lanmitm
         run: |
           export ANDROID_HOME=$HOME/android-sdk
           export PATH=$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$PATH
-          android update project -p . -t android-19
+          android update project -p . -t android-14
 
       - name: Build with Ant
         working-directory: Lanmitm
