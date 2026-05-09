@@ -1,4 +1,4 @@
-name: Auto Build Lanmitm
+name: Auto Build Lanmitm (Eclipse Ant)
 
 on:
   workflow_dispatch:
@@ -8,26 +8,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download Lanmitm source
+      - name: Clone Lanmitm
         run: |
           git clone https://github.com/dalufine/Lanmitm.git
           cd Lanmitm
           ls -al
 
-      - name: Set up JDK 17
+      - name: Install JDK 8
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 8
 
-      - name: Build APK
+      - name: Install Android SDK (legacy tools)
+        run: |
+          wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip -O sdk-tools.zip
+          mkdir -p $HOME/android-sdk
+          unzip sdk-tools.zip -d $HOME/android-sdk
+          yes | $HOME/android-sdk/tools/bin/sdkmanager --licenses
+          $HOME/android-sdk/tools/bin/sdkmanager "platforms;android-19" "build-tools;19.1.0"
+
+      - name: Generate build.xml
         working-directory: Lanmitm
         run: |
-          chmod +x ./gradlew
-          ./gradlew assembleDebug --stacktrace
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$PATH
+          android update project -p . -t android-19
+
+      - name: Build with Ant
+        working-directory: Lanmitm
+        run: ant debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Lanmitm-debug-apk
-          path: Lanmitm/app/build/outputs/apk/debug/*.apk
+          path: Lanmitm/bin/*-debug.apk
